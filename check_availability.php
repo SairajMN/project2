@@ -8,7 +8,7 @@ if(!empty($_POST["email"])) {
 if($count>0)
 {
 echo "<span style='color:red'> Email already exists .</span>";
- echo "<script>$('#submit').prop('disabled',true);</script>";
+ echo "<script>$('#submit1').prop('disabled',true);</script>";
 } else{
 	
 	echo "<span style='color:green'> Email available for Registration .</span>";

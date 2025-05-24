@@ -1,178 +1,339 @@
+<?php session_start();
+error_reporting(0);
+include_once('includes/config.php');
+if(strlen( $_SESSION["aid"])==0)
+{   
+header('location:logout.php');
+} else {
 
-<?php
-session_start();
-include('include/config.php');
-if(strlen($_SESSION['alogin'])==0)
-	{	
-header('location:index.php');
+// Code for Take Action
+if(isset($_POST['takeaction']))
+{
+    $oid=$_GET['orderid'];
+    $status=$_POST['ostatus'];
+    $remark=$_POST['remark'];
+    $actionby=$_SESSION['aid'];
+    $canceledBy='Admin';
+
+    if($status=='Cancelled'):
+   $query="insert into ordertrackhistory(orderId,status,remark,actionBy,canceledBy) values('$oid','$status','$remark','$actionby',' $canceledBy');";
+   $query.="update orders set orderStatus='$status' where id='$oid'";
+else:
+  $query="insert into ordertrackhistory(orderId,status,remark,actionBy) values('$oid','$status','$remark','$actionby');";
+   $query.="update orders set orderStatus='$status' where id='$oid'";
+endif;    
+$result = mysqli_multi_query($con, $query);
+    if ($result) {
+    
+    echo '<script>alert("Action has been updated successfully")</script>';
+    echo "<script>window.location.href ='all-orders.php'</script>";
+  }
+  else
+    {
+     echo '<script>alert("Something Went Wrong. Please try again.")</script>';
+    }
 }
-else{
-date_default_timezone_set('Asia/Kolkata');// change according timezone
-$currentTime = date( 'd-m-Y h:i:s A', time () );
 
 
 ?>
 <!DOCTYPE html>
 <html lang="en">
-<head>
-	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>Admin| Pending Orders</title>
-	<link type="text/css" href="bootstrap/css/bootstrap.min.css" rel="stylesheet">
-	<link type="text/css" href="bootstrap/css/bootstrap-responsive.min.css" rel="stylesheet">
-	<link type="text/css" href="css/theme.css" rel="stylesheet">
-	<link type="text/css" href="images/icons/css/font-awesome.css" rel="stylesheet">
-	<link type="text/css" href='http://fonts.googleapis.com/css?family=Open+Sans:400italic,600italic,400,600' rel='stylesheet'>
-	<script language="javascript" type="text/javascript">
-var popUpWin=0;
-function popUpWindow(URLStr, left, top, width, height)
-{
- if(popUpWin)
-{
-if(!popUpWin.closed) popUpWin.close();
-}
-popUpWin = open(URLStr,'popUpWin', 'toolbar=no,location=no,directories=no,status=no,menubar=no,scrollbars=yes,resizable=no,copyhistory=yes,width='+600+',height='+600+',left='+left+', top='+top+',screenX='+left+',screenY='+top+'');
-}
-
-</script>
-</head>
-<body>
-<?php include('include/header.php');?>
-
-	<div class="wrapper">
-		<div class="container">
-			<div class="row">
-<?php include('include/sidebar.php');?>				
-			<div class="span9">
-					<div class="content">
-
-	<div class="module">
-							<div class="module-head">
-								<h3>Order Details #<?php echo intval($_GET['oid']);?></h3>
-							</div>
-							<div class="module-body table">
-
-
-									<br />
-
-					<div class="table-responsive">		
-			<table cellpadding="0" cellspacing="0" border="0" class="datatable-1 table table-bordered table-striped	 display table-responsive" >
-	
+    <head>
+        <meta charset="utf-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+        <meta name="description" content="" />
+        <meta name="author" content="" />
+        <title>ShopIt  | Order Details</title>
+        <link href="https://cdn.jsdelivr.net/npm/simple-datatables@latest/dist/style.css" rel="stylesheet" />
+        <link href="css/styles.css" rel="stylesheet" />
+        <script src="js/all.min.js" crossorigin="anonymous"></script>
+    </head>
+    <body class="sb-nav-fixed">
+ <?php include_once('includes/header.php');?>
+        <div id="layoutSidenav">
+       <?php include_once('includes/sidebar.php');?>
+            <div id="layoutSidenav_content">
+                <main>
 <tbody>
 <?php 
-$orderid=intval($_GET['oid']);
-$query=mysqli_query($con,"select orders.id as oid,users.name as username,users.email as useremail,users.contactno as usercontact,users.shippingAddress as shippingaddress,users.shippingCity as shippingcity,users.shippingState as shippingstate,users.shippingPincode as shippingpincode,products.productName as productname,products.shippingCharge as shippingcharge,orders.quantity as quantity,orders.orderDate as orderdate,products.productPrice as productprice,billingAddress,billingState,billingCity,billingPincode,products.id as pid,productImage1,shippingcharge from orders join users on  orders.userId=users.id join products on products.id=orders.productId where orders.id='$orderid'");
+$oid=$_GET['orderid'];
+$query=mysqli_query($con,"SELECT orders.id,orderNumber,totalAmount,orderStatus,orderDate,users.contactno,orders.txnType,orders.txnNumber
+,users.name,users.email,users.contactno,billingAddress,biilingCity,billingState,billingPincode,billingCountry,shippingAddress,shippingCity,shippingState,shippingPincode,shippingCountry
+    FROM `orders` join users on users.id=orders.userId 
+join addresses on addresses.id=orders.addressId
+    where (orders.id='$oid')");
 $cnt=1;
 while($row=mysqli_fetch_array($query))
 {
-?>										
-										<tr>
-											<th>Order Id</th>
-											<td><?php echo htmlentities($row['oid']);?></td>
-											<th>Order Date</th>
-											<td><?php echo htmlentities($row['orderdate']);?></td>
-										</tr>
-										<tr>
-											<th>Username</th>
-											<td><?php echo htmlentities($row['username']);?></td>
-											<th>User Contact Details</th>
-											<td><?php echo htmlentities($row['useremail']);?>/<?php echo htmlentities($row['usercontact']);?></td>
-										</tr>
-										<tr>
-										<th>User Shipping Details</th>
-										
-											<td><?php echo htmlentities($row['billingAddress'].",".$row['billingCity'].",".$row['billingState']."-".$row['shippingpincode']);?></td>
+?>  
 
-												<th>User Billing Details</th>
-										
-											<td><?php echo htmlentities($row['shippingaddress'].",".$row['shippingcity'].",".$row['shippingstate']."-".$row['billingPincode']);?></td>
-										</tr>
-										<tr>
-											<th>Product Name</th>
-											<td><?php echo htmlentities($row['productname']);?></td>
-												<th>Product Image</th>
-											<td><img src="productimages/<?php echo htmlentities($row['pid']."/".$row['productImage1']);?>" width="100"></td>
-										</tr>
-										<tr>
-											<th>Product Quantity</th>
-											<td><?php echo htmlentities($row['quantity']);?></td>
-												<th>Product Price</th>
-											<td><?php echo htmlentities($row['productprice']);?></td>
-										</tr>
-										<tr>
-											<th>Shipping Charge</th>
-										<td>	<?php echo htmlentities($row['shippingcharge']);?></td>
-											<th>Grand Total</th>
-											<td><?php echo htmlentities($row['quantity']*$row['productprice']+$row['shippingcharge']);?></td>
-										</tr>
+                        
 
-										</tbody>
-								</table>
-								<?php $cnt=$cnt+1; } ?>
+                    <div class="container-fluid px-4" >
+                        <h1 class="mt-4">#<?php echo htmlentities($row['orderNumber']);?> Details</h1>
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                <i class="fas fa-table me-1"></i>
+                                Order Details
+                            </div>
+                            <div class="card-body" id="print">
 
+
+                                <div class="row">
+                                    <div class="col-5">
+                                <table class="table table-bordered" border='1' width="100%">
+                            
+                                        <tr>
+                                            <th colspan="2" style="text-align:center;">Order Details</th>
+                                        </tr>
+                                        <tr>
+                                            <th>Order No.</th>
+                                            <td><?php echo htmlentities($row['orderNumber']);?></td>
+                                            </tr>
+                                            <tr>
+                                            <th>Order Amount</th>
+                                            <td> <?php echo htmlentities($row['totalAmount']);?></td>
+                                            </tr>
+                                            <tr>
+                                            <th>Order Date</th>
+                                            <td><?php echo htmlentities($row['orderDate']);?></td>
+                                        </tr>
+                                        <tr>
+                                            <th>Order Status</th>
+                                               <td><?php $ostatus=$row['orderStatus'];
+                                               if($ostatus==''):
+                                                echo "Not Processed Yet";
+                                            else:
+                                                echo $ostatus;
+                                            endif;
+
+                                           ?></td>
+                                           </tr>
+                                             <tr>
+                                            <th>Txn Type</th>
+                                               <td><?php echo htmlentities($row['txnType']);?></td>
+                                           </tr>
+   <tr>
+                                            <th>Txn Number</th>
+                                               <td><?php echo htmlentities($row['txnNumber']);?></td>
+                                           </tr>                   
+
+                               
+                                       
+                                    </tbody>
+                                </table></div>
+
+<!--Cutomer /Users Details --->
+ <div class="col-7" style="float:left;">
+        <table class="table table-bordered" border="1" width="100%">
+                                        <tr>
+                                            <th colspan="2" style="text-align:center;">Customer/User Details</th>
+                                        </tr>
+                                        <tr>
+                                            <th>Cutomer /User Name</th>
+                                            <td><?php echo htmlentities($row['name']);?></td>
+                                            </tr>
+                                            <tr>
+                                            <th>Email id </th>
+                                            <td> <?php echo htmlentities($row['email']);?></td>
+                                            </tr>
+                                            <tr>
+                                            <th>Contactno</th>
+                                            <td><?php echo htmlentities($row['contactno']);?></td>
+                                        </tr>
+                                        <tr>
+                                            <th>Billing Address</th>
+                                               <td><?php echo htmlentities($row['billingAddress']);?><br />
+                                                <?php echo htmlentities($row['biilingCity']);?>, <?php echo htmlentities($row['billingState']);?><br />
+                                                <?php echo htmlentities($row['billingCountry']);?>-<?php echo htmlentities($row['billingPincode']);?>
+
+                                               </td>
+                                           </tr>
+                                             <tr>
+                                            <th>Shipping Address</th>
+                                               <td><?php echo htmlentities($row['shippingAddress']);?><br />
+                                            <?php echo htmlentities($row['shippingCity']);?>, <?php echo htmlentities($row['shippingState']);?><br />
+                                                <?php echo htmlentities($row['shippingCountry']);?>-<?php echo htmlentities($row['shippingPincode']);?>
+                                               </td>
+                                           </tr>                  
+
+                                    
+                                        <?php $cnt=$cnt+1; } ?>
+                                       
+                                    </tbody>
+                                </table></div>
+
+<!-- Products / Item Details --->
+ <div class="col-12">
+        <table class="table table-bordered" border="1">
+                                        <tr>
+                                            <th colspan="6" style="text-align:center;">Products / Items Details</th>
+                                        </tr>
+                                        <tr>
+                                            <th>Product</th>
+                                            <th>Product Name</th>
+                                            <th>Product Price </th>
+                                            <th>Product Qty</th>
+                                            <th>Total Amount</th>
+                                            <th>Shipping Amount</th>
+                                        </tr>
 <?php 
-$ret = mysqli_query($con,"SELECT * FROM ordertrackhistory WHERE orderId='$orderid'");
-$count=mysqli_num_rows($ret);
+$oid=$_GET['orderid'];
+$query=mysqli_query($con,"SELECT products.id as pid,products.productName,products.productImage1,products.productPrice,products.shippingCharge, ordersdetails.quantity FROM `ordersdetails` 
+JOIN orders on orders.orderNumber=ordersdetails.orderNumber
+join products on products.id=ordersdetails.productId
+    where (orders.id='$oid')");
+$cnt=1;
+while($row=mysqli_fetch_array($query))
+{
+?>  
 
-?>
+             <tr>
+                    <td><img src="productimages/<?php echo htmlentities($row['productImage1']);?>" alt="<?php echo htmlentities($row['productName']);?>" width="100" height="100"></td>
+                    <td>
+                       <a href="edit-product.php?id=<?php echo htmlentities($pd=$row['pid']);?>" target="_blank"><?php echo htmlentities($row['productName']);?></a>
+        </td>
+<td><?php echo htmlentities($row['productPrice']);?></td>
+                    <td><?php echo htmlentities($row['quantity']);?></td>
+                     <td><?php echo htmlentities($totalamount=$row['quantity']*$row['productPrice']);?></td>
+                        <td><?php echo htmlentities($tshipping=$row['shippingCharge']);?></td>
+             
+                </tr>
+<?php 
+$grandtotalamount+=$totalamount;
+$grandtshipping+=$tshipping;
+} ?>
 
-			<table cellpadding="0" cellspacing="0" border="0" class="table table-bordered table-striped" style="margin-top:1%;" >
-<?php if($count>0){ ?>
-	<tr>
-		<th colspan="4" style="color:blue; font-size:16px; text-align:center;">Order History</th>
-	</tr>
-	<tr>
-		<th>Remark</th>
-		<th>Status</th>
-		<th>Date</th>
-	</tr>
-<?php while($row=mysqli_fetch_array($ret)){?>
-		
-    
-      <tr>
-      <td><?php echo $row['remark'];?></td>
-      <td><?php echo $row['status'];?></td>
-      <td><?php echo $row['postingDate'];?></td>
-    </tr>
-   
-   <?php }} ?>
+<tr>
+    <th colspan="4" style="text-align:right;">Sub-Total</th>
+    <th><?php echo htmlentities(round($grandtotalamount,2));?></th>
+    <th><?php echo htmlentities(round($grandtshipping,2));?></th>
+</tr>
+<tr>
+    <th colspan="4" style="text-align:right;">Grand-Total</th>
+    <th colspan="2" style="text-align:center;"><?php echo htmlentities(round($grandtotalamount+$grandtshipping,2));?></th>
+</tr>
+                                </table></div>
+
+<!-- Order Track/Action History --->
+<?php 
+$query=mysqli_query($con,"SELECT remark,status,postingDate,tbladmin.username FROM `ordertrackhistory`
+join tbladmin on tbladmin.id=ordertrackhistory.actionBy
+    where (ordertrackhistory.orderId='$oid')");
+$count=mysqli_num_rows($query);
+if($count>0){
+     ?>
+ <div class="col-12">
+        <table class="table table-bordered" border="1" width="100%">
+                                        <tr>
+                                            <th colspan="6" style="text-align:center;">Order History</th>
+                                        </tr>
+                                        <tr>
+                                            <th>Remark</th>
+                                            <th>Status</th>
+                                            <th>Remark By </th>
+                                            <th>Action Date</th>
+                                        </tr>
+<?php 
+while($row=mysqli_fetch_array($query))
+{
+?>  
+
+<tr>
+<td><?php echo htmlentities($row['remark']);?></td>
+<td><?php echo htmlentities($row['status']);?></td>
+<td><?php echo htmlentities($row['username']);?></td>
+<td><?php echo htmlentities($row['postingDate']);?></td>
+             
+</tr>
+<?php } ?>
+
+</table></div>
+<?php } ?>
 
 
 
-										<tr>
-											<td colspan="4">    <a href="updateorder.php?oid=<?php echo htmlentities($orderid);?>" title="Update order" target="_blank" class="btn btn-primary">Take Action</a>
-											</td>
-											</tr>
-										</table>
+<?php if($ostatus==''|| $ostatus=='Packed' || $ostatus=='Dispatched' || $ostatus=='In Transit' || $ostatus=='Out For Delivery'): ?>
+<div align="center"><button class="btn btn-primary" type="button" data-bs-toggle="modal" data-bs-target="#exampleModal">Take Action</button>
+</div>
+<?php endif;?>
 
-										
-							</div>
-							</div>
-						</div>						
 
-						
-						
-					</div><!--/.content-->
-				</div><!--/.span9-->
-			</div>
-		</div><!--/.container-->
-	</div><!--/.wrapper-->
+<div style="float:right;">
+  <button class="btn btn-primary" style="cursor: pointer;"  OnClick="CallPrint(this.value)" >Print</button></div>
+                            </div>
+                            </div>
+                        </div>
+                    </div>
+                </main>
+<?php include_once('includes/footer.php');?>
+                </footer>
+            </div>
+        </div>
 
-<?php include('include/footer.php');?>
+<!-- Modal -->
+<div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+<form method="post" name="takeaction">
 
-	<script src="scripts/jquery-1.9.1.min.js" type="text/javascript"></script>
-	<script src="scripts/jquery-ui-1.10.1.custom.min.js" type="text/javascript"></script>
-	<script src="bootstrap/js/bootstrap.min.js" type="text/javascript"></script>
-	<script src="scripts/flot/jquery.flot.js" type="text/javascript"></script>
-	<script src="scripts/datatables/jquery.dataTables.js"></script>
-	<script>
-		$(document).ready(function() {
-			$('.datatable-1').dataTable();
-			$('.dataTables_paginate').addClass("btn-group datatable-pagination");
-			$('.dataTables_paginate > a').wrapInner('<span />');
-			$('.dataTables_paginate > a:first-child').append('<i class="icon-chevron-left shaded"></i>');
-			$('.dataTables_paginate > a:last-child').append('<i class="icon-chevron-right shaded"></i>');
-		} );
-	</script>
-</body>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Update the Order Status</h5>
+                <button class="btn-close" type="button" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+<p><select name="ostatus" class="form-control" required>
+    <option value="">Select</option>
+    <?php if($ostatus==''): ?>
+        <option value="Cancelled">Cancel</option>
+    <option value="Packed">Packed</option>
+    <option value="Dispatched">Dispatched</option>
+    <option value="In Transit">In Transit</option>
+     <option value="Out For Delivery">Out For Delivery</option>
+    <option value="Delivered">Delivered</option>
+    <?php elseif($ostatus=='Packed'):?>
+        <option value="Dispatched">Dispatched</option>
+    <option value="In Transit">In Transit</option>
+     <option value="Out For Delivery">Out For Delivery</option>
+    <option value="Delivered">Delivered</option>
+   <?php elseif($ostatus=='Dispatched'):?>
+     <option value="In Transit">In Transit</option>
+     <option value="Out For Delivery">Out For Delivery</option>
+    <option value="Delivered">Delivered</option>
+    <?php elseif($ostatus=='In Transit'):?>
+     <option value="Out For Delivery">Out For Delivery</option>
+    <option value="Delivered">Delivered</option>
+    <?php elseif($ostatus=='Out For Delivery'):?>
+        <option value="Delivered">Delivered</option>
+        <?php endif;?>
+</select></p>
+<p>
+<textarea class="form-control" required name="remark" placeholder="Remark"></textarea></p>
+            </div>
+            <div class="modal-footer"><button class="btn btn-secondary" type="button" data-bs-dismiss="modal">Close</button>
+                <button class="btn btn-primary" type="submit" name="takeaction">Save changes</button></div>
+        </div>
+    </form>
+    </div>
+</div>
+</div>
+
+        <script src="js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+        <script src="js/scripts.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/simple-datatables@latest" crossorigin="anonymous"></script>
+        <script src="js/datatables-simple-demo.js"></script>
+               <script>
+function CallPrint(strid) {
+var prtContent = document.getElementById("print");
+var WinPrint = window.open('', '', 'left=0,top=0,width=800,height=900,toolbar=0,scrollbars=0,status=0');
+WinPrint.document.write(prtContent.innerHTML);
+WinPrint.document.close();
+WinPrint.focus();
+WinPrint.print();
+}
+
+</script>
+    </body>
+</html>
 <?php } ?>

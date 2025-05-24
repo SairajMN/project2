@@ -27,6 +27,33 @@ $cancelledorders=$results['cancelledorders'];
 $ret1=mysqli_query($con,"select count(id) as totalusers from users;");
 $results1=mysqli_fetch_array($ret1);
 $tregusers=$results1['totalusers'];
+// Get order trends data (last 7 days) including cancelled orders
+$trendQuery = mysqli_query($con, "
+    SELECT 
+        DATE(orderDate) as orderDay,
+        COUNT(if((orderStatus='' || orderStatus is null),1,NULL)) as neworders,
+        COUNT(if(orderStatus='Packed',1,NULL)) as packedorders,
+        COUNT(if(orderStatus='Delivered',1,NULL)) as deliveredorders,
+        COUNT(if(orderStatus='Cancelled',1,NULL)) as cancelledorders
+    FROM orders 
+    WHERE orderDate >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)
+    GROUP BY DATE(orderDate)
+    ORDER BY orderDay ASC
+");
+
+$trendLabels = [];
+$newData = [];
+$packedData = [];
+$deliveredData = [];
+$cancelledData = [];
+
+while($row = mysqli_fetch_assoc($trendQuery)) {
+    $trendLabels[] = date('M j', strtotime($row['orderDay']));
+    $newData[] = $row['neworders'];
+    $packedData[] = $row['packedorders'];
+    $deliveredData[] = $row['deliveredorders'];
+    $cancelledData[] = $row['cancelledorders'];
+}
 ?>
 
 <!DOCTYPE html>
@@ -37,7 +64,7 @@ $tregusers=$results1['totalusers'];
         <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
         <meta name="description" content="" />
         <meta name="author" content="" />
-        <title>Shooping Portal | Admin Dashboard</title>
+        <title>ShopIt  | Admin Dashboard</title>
         <link href="https://cdn.jsdelivr.net/npm/simple-datatables@latest/dist/style.css" rel="stylesheet" />
         <link href="css/styles.css" rel="stylesheet" />
         <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/js/all.min.js" crossorigin="anonymous"></script>
@@ -212,6 +239,19 @@ $tregusers=$results1['totalusers'];
 
                
                     </div>
+                    <div class="row">
+    <div class="col-xl-12">
+        <div class="card mb-4">
+            <div class="card-header">
+                <i class="fas fa-chart-line me-1"></i>
+                Order Trends (Last 7 Days)
+            </div>
+            <div class="card-body">
+                <canvas id="trendingChart" width="100%" height="40"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
                 </main>
    <?php include_once('includes/footer.php');?>
             </div>
@@ -223,6 +263,77 @@ $tregusers=$results1['totalusers'];
         <script src="assets/demo/chart-bar-demo.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/simple-datatables@latest" crossorigin="anonymous"></script>
         <script src="js/datatables-simple-demo.js"></script>
+               <script>
+// Trending Chart with Cancelled Orders
+document.addEventListener("DOMContentLoaded", function() {
+    const ctx = document.getElementById('trendingChart').getContext('2d');
+    const trendingChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: <?php echo json_encode($trendLabels); ?>,
+            datasets: [
+                {
+                    label: 'New Orders',
+                    data: <?php echo json_encode($newData); ?>,
+                    borderColor: 'rgba(220, 53, 69, 1)',
+                    backgroundColor: 'rgba(220, 53, 69, 0.1)',
+                    tension: 0.3,
+                    fill: true
+                },
+                {
+                    label: 'Packed Orders',
+                    data: <?php echo json_encode($packedData); ?>,
+                    borderColor: 'rgba(255, 193, 7, 1)',
+                    backgroundColor: 'rgba(255, 193, 7, 0.1)',
+                    tension: 0.3,
+                    fill: true
+                },
+                {
+                    label: 'Delivered Orders',
+                    data: <?php echo json_encode($deliveredData); ?>,
+                    borderColor: 'rgba(25, 135, 84, 1)',
+                    backgroundColor: 'rgba(25, 135, 84, 0.1)',
+                    tension: 0.3,
+                    fill: true
+                },
+                {
+                    label: 'Cancelled Orders',
+                    data: <?php echo json_encode($cancelledData); ?>,
+                    borderColor: 'rgba(33, 37, 41, 1)',
+                    backgroundColor: 'rgba(33, 37, 41, 0.1)',
+                    tension: 0.3,
+                    fill: true,
+                    borderDash: [5, 5] // Makes the line dashed for cancelled orders
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            interaction: {
+                intersect: false,
+                mode: 'index'
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        stepSize: 1
+                    }
+                }
+            },
+            plugins: {
+                tooltip: {
+                    mode: 'index',
+                    intersect: false
+                },
+                legend: {
+                    position: 'top',
+                }
+            }
+        }
+    });
+});
+</script>
     </body>
 </html>
 <?php } ?>

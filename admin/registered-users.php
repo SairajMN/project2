@@ -20,7 +20,7 @@ echo "<script>window.location.href='manage-categories.php'</script>";
         <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
         <meta name="description" content="" />
         <meta name="author" content="" />
-        <title>Shopping Portal | Manage Registered userd</title>
+        <title>ShopIt  | Manage Registered userd</title>
         <link href="https://cdn.jsdelivr.net/npm/simple-datatables@latest/dist/style.css" rel="stylesheet" />
         <link href="css/styles.css" rel="stylesheet" />
         <script src="js/all.min.js" crossorigin="anonymous"></script>

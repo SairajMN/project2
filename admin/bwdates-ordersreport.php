@@ -16,7 +16,7 @@ header('location:logout.php');
         <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
         <meta name="description" content="" />
         <meta name="author" content="" />
-        <title>Shopping Portal | Between Dates Order Report</title>
+        <title>ShopIt | Between Dates Order Report</title>
         <link href="css/styles.css" rel="stylesheet" />
         <script src="js/all.min.js" crossorigin="anonymous"></script>
     </head>

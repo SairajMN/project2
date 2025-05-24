@@ -34,7 +34,7 @@ echo "<script>window.location.href='manage-products.php'</script>";
         <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
         <meta name="description" content="" />
         <meta name="author" content="" />
-        <title>Shopping Portal | Edit Product</title>
+        <title>ShopIt  | Edit Product</title>
         <link href="css/styles.css" rel="stylesheet" />
         <script src="js/all.min.js" crossorigin="anonymous"></script>
         <script src="js/jquery-3.5.1.min.js"></script>
@@ -70,7 +70,12 @@ function getSubcat(val) {
 
 <?php 
 $pid=intval($_GET['id']);
-$query=mysqli_query($con,"select products.id as pid,products.productImage1,products.productImage2,products.productImage3,products.productName,category.categoryName,subcategory.subcategoryName as subcatname,products.postingDate,products.updationDate,subcategory.id as subid,tbladmin.username,category.id as catid,products.productCompany,products.productPrice,products.productPriceBeforeDiscount,products.productAvailability,products.productDescription,products.shippingCharge from products join subcategory on products.subCategory=subCategory.id join category on products.category=category.id join tbladmin on tbladmin.id=products.addedBy where  products.id='$pid' order by pid desc");
+$query=mysqli_query($con,"select products.id as pid,products.productImage1,products.productImage2,products.productImage3,products.productName,category.categoryName,subcategory.subcategoryName as subcatname,products.postingDate,products.updationDate,subcategory.id as subid,tbladmin.username,category.id as catid,products.productCompany,products.productPrice,products.productPriceBeforeDiscount,products.productAvailability,products.productDescription,products.shippingCharge 
+    from products 
+    join subcategory on products.subCategory=subcategory.id 
+    join category on products.category=category.id 
+    join tbladmin on tbladmin.id=products.addedBy 
+    where  products.id='$pid' order by pid desc");
 while($row=mysqli_fetch_array($query))
 {
 ?>                                 

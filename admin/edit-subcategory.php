@@ -1,143 +1,98 @@
-
-<?php
-session_start();
-include('include/config.php');
-if(strlen($_SESSION['alogin'])==0)
-	{	
-header('location:index.php');
-}
-else{
-date_default_timezone_set('Asia/Kolkata');// change according timezone
-$currentTime = date( 'd-m-Y h:i:s A', time () );
-
-
+<?php session_start();
+include_once('includes/config.php');
+error_reporting(0);
+if(strlen( $_SESSION["aid"])==0)
+{   
+header('location:logout.php');
+} else {
+//For Update Sub-categories
 if(isset($_POST['submit']))
 {
-	$category=$_POST['category'];
-	$subcat=$_POST['subcategory'];
-	$id=intval($_GET['id']);
-$sql=mysqli_query($con,"update subcategory set categoryid='$category',subcategory='$subcat',updationDate='$currentTime' where id='$id'");
-$_SESSION['msg']="Sub-Category Updated !!";
+    $category=$_POST['category'];
+    $subcat=$_POST['subcategory'];
+    $id=intval($_GET['id']);
+$sql=mysqli_query($con,"update subcategory set categoryid='$category',subcategoryName='$subcat' where id='$id'");
+echo "<script>alert('Sub-Category Updated successfully');</script>";
+echo "<script>window.location.href='manage-subcategories.php'</script>";
 
 }
 
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
-<head>
-	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>Admin| Edit SubCategory</title>
-	<link type="text/css" href="bootstrap/css/bootstrap.min.css" rel="stylesheet">
-	<link type="text/css" href="bootstrap/css/bootstrap-responsive.min.css" rel="stylesheet">
-	<link type="text/css" href="css/theme.css" rel="stylesheet">
-	<link type="text/css" href="images/icons/css/font-awesome.css" rel="stylesheet">
-	<link type="text/css" href='http://fonts.googleapis.com/css?family=Open+Sans:400italic,600italic,400,600' rel='stylesheet'>
-</head>
-<body>
-<?php include('include/header.php');?>
+    <head>
+        <meta charset="utf-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+        <meta name="description" content="" />
+        <meta name="author" content="" />
+        <title>ShopIt  | Edit Sub Category</title>
+        <link href="css/styles.css" rel="stylesheet" />
+        <script src="js/all.min.js" crossorigin="anonymous"></script>
+    </head>
+    <body>
+   <?php include_once('includes/header.php');?>
+        <div id="layoutSidenav">
+   <?php include_once('includes/sidebar.php');?>
+            <div id="layoutSidenav_content">
+                <main>
+                    <div class="container-fluid px-4">
+                        <h1 class="mt-4">Edit SubCategory</h1>
+                        <ol class="breadcrumb mb-4">
+                            <li class="breadcrumb-item"><a href="dashboard.php">Dashboard</a></li>
+                            <li class="breadcrumb-item active">Edit SubCategory</li>
+                        </ol>
+                        <div class="card mb-4">
+                            <div class="card-body">
 
-	<div class="wrapper">
-		<div class="container">
-			<div class="row">
-<?php include('include/sidebar.php');?>				
-			<div class="span9">
-					<div class="content">
-
-						<div class="module">
-							<div class="module-head">
-								<h3>Edit SubCategory</h3>
-							</div>
-							<div class="module-body">
-
-									<?php if(isset($_POST['submit']))
-{?>
-									<div class="alert alert-success">
-										<button type="button" class="close" data-dismiss="alert">×</button>
-									<strong>Well done!</strong>	<?php echo htmlentities($_SESSION['msg']);?><?php echo htmlentities($_SESSION['msg']="");?>
-									</div>
-<?php } ?>
-
-
-									<br />
-
-			<form class="form-horizontal row-fluid" name="Category" method="post" >
 <?php
 $id=intval($_GET['id']);
-$query=mysqli_query($con,"select category.id,category.categoryName,subcategory.subcategory from subcategory join category on category.id=subcategory.categoryid where subcategory.id='$id'");
+$query=mysqli_query($con,"select category.id,category.categoryName,subcategory.subcategoryName from subcategory join category on category.id=subcategory.categoryid where subcategory.id='$id'");
 while($row=mysqli_fetch_array($query))
 {
-?>		
-
-<div class="control-group">
-<label class="control-label" for="basicinput">Category</label>
-<div class="controls">
-<select name="category" class="span8 tip" required>
+?>  
+<form  method="post">                                
+<div class="row">
+<div class="col-2">Category Name</div>
+<div class="col-4">
+<select name="category" class="form-control" required>
 <option value="<?php echo htmlentities($row['id']);?>"><?php echo htmlentities($catname=$row['categoryName']);?></option>
 <?php $ret=mysqli_query($con,"select * from category");
 while($result=mysqli_fetch_array($ret))
 {
 echo $cat=$result['categoryName'];
 if($catname==$cat)
-{
-	continue;
-}
-else{
+{continue;
+}else{
 ?>
 <option value="<?php echo $result['id'];?>"><?php echo $result['categoryName'];?></option>
 <?php } }?>
-</select>
+</select>    
 </div>
 </div>
 
-
-
-
-<div class="control-group">
-<label class="control-label" for="basicinput">SubCategory Name</label>
-<div class="controls">
-<input type="text" placeholder="Enter category Name"  name="subcategory" value="<?php echo  htmlentities($row['subcategory']);?>" class="span8 tip" required>
-</div>
+<div class="row" style="margin-top:1%;">
+<div class="col-2">Sub Category name</div>
+<div class="col-4"><input type="text" value="<?php echo  htmlentities($row['subcategoryName']);?>"  name="subcategory" class="form-control" required></div>
 </div>
 
+<div class="row">
+<div class="col-2"><button type="submit" name="submit" class="btn btn-primary">Update</button></div>
+</div>
 
-									<?php } ?>	
+</form>
+<?php } ?>
 
-	<div class="control-group">
-											<div class="controls">
-												<button type="submit" name="submit" class="btn">Update</button>
-											</div>
-										</div>
-									</form>
-							</div>
-						</div>
-
-
-						
-
-						
-						
-					</div><!--/.content-->
-				</div><!--/.span9-->
-			</div>
-		</div><!--/.container-->
-	</div><!--/.wrapper-->
-
-<?php include('include/footer.php');?>
-
-	<script src="scripts/jquery-1.9.1.min.js" type="text/javascript"></script>
-	<script src="scripts/jquery-ui-1.10.1.custom.min.js" type="text/javascript"></script>
-	<script src="bootstrap/js/bootstrap.min.js" type="text/javascript"></script>
-	<script src="scripts/flot/jquery.flot.js" type="text/javascript"></script>
-	<script src="scripts/datatables/jquery.dataTables.js"></script>
-	<script>
-		$(document).ready(function() {
-			$('.datatable-1').dataTable();
-			$('.dataTables_paginate').addClass("btn-group datatable-pagination");
-			$('.dataTables_paginate > a').wrapInner('<span />');
-			$('.dataTables_paginate > a:first-child').append('<i class="icon-chevron-left shaded"></i>');
-			$('.dataTables_paginate > a:last-child').append('<i class="icon-chevron-right shaded"></i>');
-		} );
-	</script>
-</body>
+                            </div>
+                        </div>
+                    </div>
+                </main>
+          <?php include_once('includes/footer.php');?>
+            </div>
+        </div>
+        <script src="js/bootstrap.bundle.min.js"></script>
+        <script src="js/scripts.js"></script>
+    </body>
+</html>
 <?php } ?>

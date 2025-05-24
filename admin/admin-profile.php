@@ -24,7 +24,7 @@ echo "<script>window.location.href='admin-profile.php'</script>";
         <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
         <meta name="description" content="" />
         <meta name="author" content="" />
-        <title>Shopping Portal | Admin Profile</title>
+        <title>ShopIt  | Admin Profile</title>
         <link href="css/styles.css" rel="stylesheet" />
         <script src="js/all.min.js" crossorigin="anonymous"></script>
     </head>
