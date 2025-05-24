@@ -11,7 +11,7 @@ if(strlen($_SESSION['id'])==0)
         <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
         <meta name="description" content="" />
         <meta name="author" content="" />
-        <title>Shopping Portal | My Orders</title>
+        <title>ShopIt | My Orders</title>
         <!-- Favicon-->
         <link rel="icon" type="image/x-icon" href="assets/favicon.ico" />
         <!-- Bootstrap icons-->
