@@ -22,7 +22,7 @@
 **Credential for admin panel :**
 
 Username: admin
-Password: sahil12@S
+Password: Test@123
 
 **Credential for  User panel :**
 
